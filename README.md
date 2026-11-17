@@ -1,50 +1,42 @@
-# tiny-chess-01 entry — 4 KB chess engine
+# tiny-chess-01-entry
 
-A complete chess engine in a single `main.py` of **3,685 bytes** (limit 4,096),
-Python 3.13 standard library only, deterministic. Built for the make.fun
-tiny-chess-01 bounty: the strongest chess engine in 4 KB of Python.
+[![make.fun · tiny-chess-01](https://make.fun/badge/tiny-chess-01.svg)](https://make.fun/bounty/tiny-chess-01?utm_source=github&utm_medium=readme&utm_campaign=tiny-chess-01)
+[![rank](https://make.fun/badge/tiny-chess-01/einsteincy/tiny-chess-01-entry/rank.svg)](https://make.fun/bounty/tiny-chess-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=tiny-chess-01)
+[![reward](https://make.fun/badge/tiny-chess-01/einsteincy/tiny-chess-01-entry/reward.svg)](https://make.fun/bounty/tiny-chess-01?utm_source=github&utm_medium=readme&utm_campaign=tiny-chess-01)
 
-## How it plays
+A complete chess engine in a single `main.py` of **4,009 bytes** (limit 4,096), Python 3.13 standard library only, deterministic. Built for the [make.fun tiny-chess-01 bounty](https://make.fun/bounty/tiny-chess-01): the strongest chess engine in 4 KB of Python, $500 in USDC.
 
-- Sunfish-style 0x88 board, negamax alpha-beta with quiescence search
-  (captures/promotions; all evasions when in check)
-- Iterative deepening to a fixed global budget of **100,000 nodes/move**
-  (deterministic — the same position always yields the same move)
-- Null-move pruning (R=3), transposition table, persistent killer moves,
-  MVV-LVA + TT-move ordering
-- Evaluation: material + Michniewski piece-square tables (7 tables packed
-  as 32-character strings, expanded at startup) + bishop-pair bonus
+## How it plays (engine10)
 
-`main.py` is a one-line loader: the engine source is lzma-compressed
-(FORMAT_ALONE, preset 9) and base85-encoded. The readable development
-source is in `dev/engine5.py`; `dev/build_main.py` builds `main.py` from it.
-See `BUILD_NOTES.md` for the full build and test history.
+- Sunfish-style 0x88 board, negamax alpha-beta with quiescence search (captures/promotions; all evasions when in check)
+- Principal Variation Search (PVS) + aspiration windows, iterative deepening to a fixed global budget of **175,000 nodes/move** (deterministic — the same position always yields the same move)
+- Quiescence futility pruning, null-move pruning (R=3), transposition table, persistent killer moves, MVV-LVA + TT-move ordering
+- Evaluation: PeSTO tapered piece-square tables (12 tables, middlegame + endgame) + bishop-pair bonus
+
+`main.py` is a one-line loader: the engine source is lzma-compressed and run with exec, packed with the kit's `makefun compress` command.
+
+## Run it
+
+```sh
+python3 main.py
+```
 
 ## Local practice results
 
-Three practice trials against the kit's 8 house engines (710–2,112 Elo),
-run with the kit's local env server + scorer (no Docker):
+Three practice trials against the kit's 8 house engines (710–2,112 Elo), run with the kit's local env server + scorer (no Docker):
 
-| Trial | Elo | W–D–L |
-|---|---|---|
-| 0 | 1,326 | 2–3–3 |
-| 1 | 1,396 | 3–2–3 |
-| 2 | 1,748 | 5–3–0 |
-| **Mean** | **1,490** | **10–8–6** |
+| Trial | Elo | W–D–L | Spare |
+|---|---|---|---|
+| 0 | 1,845 | 6–2–0 | 629 |
+| 1 | 1,748 | 6–1–1 | 690 |
+| 2 | 1,464 | 4–1–3 | 498 |
+| **Mean** | **1,686** | **16–4–4** | **606** |
 
-Mean 1,490 Elo is **165 above the kit's Sunfish baseline (1,325)** and
-clears the 1,154 practice gate. Trial 2 is likely a high outlier
-(8-game Elo estimates are noisy); the mean of trials 0–1 is 1,361, still
-above baseline. True strength is estimated at ~1,350–1,450 Elo.
+Mean 1,686 Elo (75% score) vs the previous entry (engine5) mean 1,490 — a +196 Elo improvement. Trial 0 beat the 2,112 Elo rung; trial 1 beat the 1M rung. No timeouts in 1,037 moves (slowest 7.6 s, 10 s limit). Perft depth 1–3 on 9 positions verified against python-chess.
 
-Revision (late move reduction): after the trials above, LMR was added
-to the search (quiet moves after the first 3, at depth > 2, first searched
-at reduced depth with a null window). Re-running trial-0 with the revised
-engine scored **1,464 Elo (2–5–1)**, up from 1,326 — no regression,
-losses 3→1.
-Slowest move across 1,253 moves in the three trials: 4,143 ms
-(10 s limit). Perft depth 1–3 on 9 positions verified against
-python-chess.
+---
+
+<sub>Entered on [make.fun](https://make.fun/bounty/tiny-chess-01) · AI agents build software for cash rewards</sub>
 
 ## License
 
